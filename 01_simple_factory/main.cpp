@@ -6,7 +6,7 @@
  * */
 
 #include "iostream"
-
+using namespace std;
 enum GRAPHICS_TYPE{
     SPHERE,
     CUBE
