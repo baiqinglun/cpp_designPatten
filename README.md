@@ -526,3 +526,304 @@ int main(){
 ```
 
 # 4、单例模式
+单例模式是一种常见的软件设计模式，它保证*一个类只有一个实例*，并且提供一个全局访问点来访问该实例。
+
+在单例模式中，通常会将类的构造函数私有化，以避免外部代码直接创建该类的对象实例。同时，该类会定义一个静态方法或静态成员变量来访问类的唯一实例。如果该实例不存在，则该静态方法或成员变量会创建一个新的实例，并返回该实例；如果实例已经存在，则直接返回该实例。
+
+单例模式的优点是：
+1. 保证系统中只有一个实例，减少了资源的占用，避免了不必要的内存浪费。
+2. 对于某些需要频繁创建和销毁对象的场景，使用单例模式可以减少系统的开销。
+3. 单例模式可以全局访问，方便统一管理和调用。
+
+单例模式也存在一些缺点:
+1. 单例模式会对代码的可测试性造成影响，因为单例实例在整个系统中只存在一个，很难进行单元测试。
+2. 单例模式的实现有时会牵扯到复杂的线程同步操作，如果实现不当，可能会导致死锁等问题。
+
+```c++
+// 只有一个类
+class Singleton
+{
+public:
+   static Singleton *getInstance(const char *name);
+   virtual void show(){};
+   ~Singleton()
+   {
+      cout << "Singleton析构函数调用" << endl;
+      singleton = nullptr;
+      delete singleton;
+   };
+
+protected:
+   // 这里的构造函数必须为protected，否则子类不法访问父类构造函数
+   Singleton()
+   {
+      cout << "Singleton构造函数调用" << endl;
+   };
+
+private:
+   static Singleton *singleton;
+};
+
+// SingletonA
+class SingletonA : public Singleton
+{
+   friend class Singleton; // 必须为友元，否则父类无法访问子类的构造函数
+public:
+   void show()
+   {
+      std::cout << "SingletonA的show调用" << std::endl;
+   }
+
+   ~SingletonA()
+   {
+      cout << "SingletonA析构函数调用" << endl;
+   };
+
+private:
+   SingletonA()
+   {
+      cout << "SingletonA构造函数调用" << endl;
+   };
+};
+
+// SingletonB
+class SingletonB : public Singleton
+{
+   friend class Singleton; // 必须为友元，否则父类无法访问子类的构造函数
+public:
+   void show()
+   {
+      std::cout << "SingletonB的show调用" << std::endl;
+   }
+
+   ~SingletonB()
+   {
+      cout << "SingletonB析构函数调用" << endl;
+   };
+
+private:
+   SingletonB()
+   {
+      cout << "SingletonB构造函数调用" << endl;
+   };
+};
+
+// 初始化静态成员变量singleton
+Singleton *Singleton::singleton = nullptr;
+// 初始化实例函数
+Singleton *Singleton::getInstance(const char *name)
+{
+   if (singleton == nullptr)
+   {
+      if (strcmp(name, "singletonA") == 0)
+      {
+         singleton = new SingletonA();
+      }
+      else if (strcmp(name, "singletonB") == 0)
+      {
+         singleton = new SingletonB();
+      }
+      else
+      {
+         singleton = new Singleton();
+      }
+   }
+   return singleton;
+}
+```
+
+测试
+```c++
+int main()
+{
+   Singleton *st = Singleton::getInstance("singletonA");
+   st->show();
+   delete st;
+   st = Singleton::getInstance("singletonB");
+   st->show();
+   return 0;
+}
+```
+如果不delete掉st，再赋值为singletonB没有反应
+
+```c++
+int main()
+{
+   Singleton *st = Singleton::getInstance("singletonA");
+   st->show();
+   // st = nullptr;
+   // delete st;
+   Singleton *st1 = Singleton::getInstance("singletonB");
+   st1->show();
+   return 0;
+}
+```
+这样也不行，还是只要st存在，就会返回Singleton::singleton
+
+# 5、原型模式
+1. 原型模式（Prototype Pattern）是一种**创建型设计模式**，它允许通过复制现有对象来创建新的对象，而无需知道对象的具体实现细节。在原型模式中，我们可以将现有对象作为原型，然后通过复制该原型来创建新的对象。
+2. 使用原型模式的一个显著优点是可以避免重复创建相似的对象，从而提高程序的性能和效率。另外，原型模式也可以用来隐藏对象创建的细节，从而使代码更加简洁和易于维护。
+3. 在实现原型模式时，通常需要在原型类中定义一个clone()方法，用于创建并返回一个新的对象实例。**clone()**方法通常会先创建一个与原型对象相同类型的新对象，然后将原型对象的状态复制到新对象中，最后返回新对象。在C++中，我们可以使用拷贝构造函数或赋值运算符来实现对象的复制。
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405153846.png)
+
+
+**代码示例**
+```c++
+class Shape {
+public:
+    virtual Shape* clone() = 0;
+    virtual void draw() = 0;
+};
+
+class Circle : public Shape {
+public:
+    Circle() {}
+    Circle(const Circle& other) {}
+    virtual Shape* clone() {
+        // return new Circle(*this) 的作用是创建一个新的 Circle 对象，并返回该对象的指针，从而实现了原型模式的复制功能
+        // *this指的是当前的Circle对象
+        // new Circle(*this)会调用拷贝构造函数
+        return new Circle(*this); 
+    }
+    virtual void draw() {
+        std::cout << "Drawing a circle.\n";
+    }
+};
+
+class Square : public Shape {
+public:
+    Square() {}
+    Square(const Square& other) {}
+    virtual Shape* clone() {
+        return new Square(*this);
+    }
+    virtual void draw() {
+        std::cout << "Drawing a square.\n";
+    }
+};
+```
+> `return new Circle(*this);`
+> // return new Circle(*this) 的作用是创建一个新的 Circle 对象，并返回该对象的指针，从而实现了原型模式的复制功能
+> // *this指的是当前的Circle对象
+> // new Circle(*this)会调用拷贝构造函数
+
+**测试**
+```c++
+
+int main()
+{
+  Circle* prototypeCircle = new Circle();
+  Square* prototypeSquare = new Square();
+
+  Shape* circle1 = prototypeCircle->clone();
+  Shape* circle2 = prototypeCircle->clone();
+  circle1->draw();
+  circle2->draw();
+  Shape* square1 = prototypeSquare->clone();
+  square1->draw();
+  
+  return 0;
+}
+```
+
+# 6、建造者模式
+
+建造者模式（Builder Pattern）是一种创建型设计模式，它允许你使用相同的构建过程来创建不同的表示形式。
+
+建造者模式的主要目的是将一个复杂对象的构建过程分离出来，使其可以独立于主要的业务逻辑而变化。通过使用建造者模式，我们可以更加灵活地创建复杂的对象，而不需要关心其具体的构建过程。
+
+建造者模式通常由以下几个角色组成：
+
+1. Director（指挥者）：负责调用建造者来构建产品，并控制建造的流程。
+2. Builder（建造者）：负责定义产品的构建过程，以及如何组装各个部件。
+3. Concrete Builder（具体建造者）：负责实现 Builder 接口，以定义产品的各个部件的具体构建方式。
+4. Product（产品）：要创建的复杂对象，通常由多个部件组成。
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405160820.png)
+
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 建造者模式
+ * 将一个复杂对象的构建过程分离出来，使其可以独立于主要的业务逻辑而变化
+ */
+
+#include <iostream>
+using namespace std;
+
+// 要创建的复杂对象，通常由多个部件组成。 
+class Product {
+public:
+    void set_part_a(const std::string& part_a) {
+        part_a_ = part_a;
+    }
+    void set_part_b(const std::string& part_b) {
+        part_b_ = part_b;
+    }
+    void set_part_c(const std::string& part_c) {
+        part_c_ = part_c;
+    }
+    void print_parts() const {
+        std::cout << "Part A: " << part_a_ << "\n";
+        std::cout << "Part B: " << part_b_ << "\n";
+        std::cout << "Part C: " << part_c_ << "\n";
+    }
+private:
+    std::string part_a_;
+    std::string part_b_;
+    std::string part_c_;
+};
+
+// 负责定义产品的构建过程，以及如何组装各个部件。
+class Builder {
+public:
+    virtual void build_part_a() = 0;
+    virtual void build_part_b() = 0;
+    virtual void build_part_c() = 0;
+    virtual Product* get_product() = 0;
+};
+
+// 负责实现 Builder 接口，以定义产品的各个部件的具体构建方式。
+class ConcreteBuilder : public Builder {
+public:
+    ConcreteBuilder() : product_(new Product()) {}
+    virtual void build_part_a() {
+        product_->set_part_a("Part A");
+    }
+    virtual void build_part_b() {
+        product_->set_part_b("Part B");
+    }
+    virtual void build_part_c() {
+        product_->set_part_c("Part C");
+    }
+    virtual Product* get_product() {
+        return product_;
+    }
+private:
+    Product* product_;
+};
+
+// 负责调用建造者来构建产品，并控制建造的流程。
+class Director {
+public:
+    Director(Builder* builder) : builder_(builder) {}
+    void construct() {
+        builder_->build_part_a();
+        builder_->build_part_b();
+        builder_->build_part_c();
+    }
+private:
+    Builder* builder_;
+};
+
+int main() {
+    ConcreteBuilder builder1;
+    Director director(&builder1);
+    director.construct();
+    Product* product = builder1.get_product();
+    product->print_parts();
+    delete product;
+    return 0;
+}
+```
