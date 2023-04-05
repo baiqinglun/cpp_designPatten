@@ -1095,4 +1095,416 @@ int main() {
 ```
 
 ## 9.2 引用代理
-auto_ptr
+手写一个auto_ptr
+```c++
+#include <iostream>
+using namespace std;
+
+template <typename T>
+class auto_ptr
+{
+public:
+  explicit auto_ptr(T *p = nullptr) : pointee(p){};
+  auto_ptr(auto_ptr<T> &rhs) : pointee(rhs.release()){};
+  ~auto_ptr() { delete pointee; };
+  auto_ptr<T> &operator=(auto_ptr &rhs)
+  {
+    if (this != &rhs)
+      reset(rhs.release());
+    return *this;
+  }
+  T &operator*() const { return *pointee; };
+  T &operator->() const { return pointee; };
+  T *get() const { return pointee; };
+  T *release()
+  {
+    T *oldPointee = pointee;
+    pointee = nullptr;
+    return oldPointee;
+  }
+  void reset(T *p = nullptr)
+  {
+    if (pointee != p)
+    {
+      delete pointee;
+      pointee = p;
+    }
+  }
+
+private:
+  T *pointee;
+};
+
+int main()
+{
+  auto_ptr<int> p1(new int(42));
+  auto_ptr<int> p2 = p1;
+  cout << *p2 <<endl;
+  auto p3 = new int(50);
+  p2.reset(p3);
+  cout << *p2 <<endl;
+
+  return 0;
+}
+```
+# 10、享元模式
+1. C++中的享元模式是一种**结构型设计模式**，它旨在通过共享对象来最小化内存使用和对象创建的开销。
+2. 在享元模式中，对象的状态被分为**内部状态**和**外部状态**，其中内部状态是对象的固有属性，而外部状态则是在运行时由客户端传递给对象的信息。
+3. 在C++中，实现享元模式需要定义一个享元工厂类和一个享元类。
+4. 享元工厂类负责创建和管理享元对象，而享元类则负责存储和处理对象的内部状态和外部状态。
+
+比如：在设计一款游戏时，里面有很多的怪物，这些怪物虽然分为不同的类别，但每种都有自己的血条、攻击力和防御力。
+1. 定义一个map，用于存储哥布林、兽人和龙；
+2. 创建哥布林对象，如果已经存在哥布林对象，返回已存在的哥布林的引用，否则新建哥布林对象；
+3. 可以验证g1和g2是同一个对象的引用。
+
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 享元模式
+ * C++中的享元模式是一种结构型设计模式，它旨在通过共享对象来最小化内存使用和对象创建的开销。
+ * 在享元模式中，对象的状态被分为内部状态和外部状态，其中内部状态是对象的固有属性，而外部状态则是在运行时由客户端传递给对象的信息。
+ * 在C++中，实现享元模式需要定义一个享元工厂类和一个享元类。
+ * 享元工厂类负责创建和管理享元对象，而享元类则负责存储和处理对象的内部状态和外部状态。
+ */
+#include <iostream>
+#include <map>
+using namespace std;
+
+class Monster
+{
+public:
+  Monster(int hp, int atk, int def) : hp_(hp), atk_(atk), def_(def){};
+  void stack()
+  {
+  }
+
+private:
+  int hp_;
+  int atk_;
+  int def_;
+};
+
+class MonsterFactory
+{
+public:
+  Monster *getMonster(const std::string &name)
+  {
+    auto it = monsterMap_.find(name);
+    if (it != monsterMap_.end())
+    {
+      return it->second;
+    }
+    Monster *monster = createMonster(name);
+    monsterMap_[name] = monster;
+    return monster;
+  }
+
+private:
+  std::map<std::string, Monster *> monsterMap_;
+  Monster *createMonster(const std::string &name)
+  {
+    if (name == "Goblin")
+    {
+      return new Monster(50, 10, 5);
+    }
+    else if (name == "Orc")
+    {
+      return new Monster(100, 20, 10);
+    }
+    else
+    {
+      return new Monster(200, 30, 20);
+    }
+  }
+};
+
+int main()
+{
+  MonsterFactory monsterFactory;
+  Monster *g1 = monsterFactory.getMonster("Goblin");
+  Monster *g2 = monsterFactory.getMonster("Goblin");
+  Monster *o1 = monsterFactory.getMonster("Orc");
+  Monster *o2 = monsterFactory.getMonster("Orc");
+  Monster *d1 = monsterFactory.getMonster("Dragon");
+  Monster *d2 = monsterFactory.getMonster("Dragon");
+
+  cout << (g1 == g2) << endl;
+  cout << (o1 == o2) << endl;
+  cout << (d1 == d2) << endl;
+  cout << g1->second << endl;
+
+  return 0;
+}
+```
+
+## 绘制棋盘案例
+1. 虽然棋盘上有很多的棋子，但他们不是白色都是黑色，每种颜色的属性都一致，只是位置不同。我们将位置单独存放。
+2. 创建白色棋子时，如果已经存在一个对象，就直接向容器中添加位置；如果不存在，则需要先创建，再添加位置；
+3. 这样所有的白色只享一个对象，极大地节约内存空间。
+
+
+```c++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+//棋子颜色  
+enum PieceColor {BLACK, WHITE};  
+//棋子位置  
+struct PiecePos  
+{  
+    int x;  
+    int y;  
+    PiecePos(int a, int b): x(a), y(b) {}  
+};  
+//棋子定义  
+class Piece  
+{  
+protected:  
+    PieceColor m_color; //颜色  
+public:  
+    Piece(PieceColor color): m_color(color) {}  
+    ~Piece() {}  
+    virtual void Draw() {}  
+};  
+class BlackPiece: public Piece  
+{  
+public:  
+    BlackPiece(PieceColor color): Piece(color) {}  
+    ~BlackPiece() {}  
+    void Draw() { cout<<"绘制一颗黑棋\n"; }  
+};  
+class WhitePiece: public Piece  
+{  
+public:  
+    WhitePiece(PieceColor color): Piece(color) {}  
+    ~WhitePiece() {}  
+    void Draw() { cout<<"绘制一颗白棋\n";}  
+};
+
+class PieceBoard  
+{  
+private:  
+    vector<PiecePos> m_vecPos; //存放棋子的位置  
+    // 虽然棋盘上有很多的棋子，但他们不是白色都是黑色，每种颜色的属性都一致，只是位置不同。我们将位置单独存放。
+    Piece *m_blackPiece;        
+    Piece *m_whitePiece;       
+    string m_blackName;  
+    string m_whiteName;  
+public:  
+    PieceBoard(string black, string white): m_blackName(black), m_whiteName(white)  
+    {  
+        m_blackPiece = null;  
+        m_whitePiece = NULL;  
+    }  
+    ~PieceBoard() { delete m_blackPiece; delete m_whitePiece;}  
+    void SetPiece(PieceColor color, PiecePos pos)  
+    {  
+        if(color == BLACK)  
+        {  
+            if(m_blackPiece == NULL)  //只有一颗黑棋  
+                m_blackPiece = new BlackPiece(color);     
+            cout<<m_blackName<<"在位置("<<pos.x<<','<<pos.y<<")";  
+            m_blackPiece->Draw();  
+        }  
+        else  
+        {  
+            if(m_whitePiece == NULL)  
+                m_whitePiece = new WhitePiece(color);  
+            cout<<m_whiteName<<"在位置("<<pos.x<<','<<pos.y<<")";  
+            m_whitePiece->Draw();  
+        }  
+        m_vecPos.push_back(pos);  
+    }  
+};
+
+int main()  
+{  
+    PieceBoard pieceBoard("A","B");  
+    pieceBoard.SetPiece(BLACK, PiecePos(4, 4));  
+    pieceBoard.SetPiece(WHITE, PiecePos(4, 16));  
+    pieceBoard.SetPiece(BLACK, PiecePos(16, 4));  
+    pieceBoard.SetPiece(WHITE, PiecePos(16, 16));  
+}
+```
+
+# 11、桥接模式
+
+C++中的桥接模式是一种结构型设计模式，**它旨在将抽象部分与实现部分分离开来，从而使它们可以独立地变化**。在桥接模式中，抽象部分和实现部分通过一个桥接接口进行连接，从而实现解耦和灵活性。
+
+在C++中，实现桥接模式需要定义一个-**抽象基类**和一个**实现基类**，其中抽象基类定义了抽象部分的接口，而实现基类定义了实现部分的接口。然后，我们通过继承和组合来实现不同的抽象部分和实现部分的组合。
+
+举一个操作系统的例子：
+
+```c++
+#include <iostream>
+using namespace std;
+
+//操作系统  
+class OS  
+{  
+public:  
+    virtual void InstallOS_Imp() {}  
+};  
+class WindowOS: public OS  
+{  
+public:  
+    void InstallOS_Imp() { cout<<"安装Window操作系统"<<endl; }   
+};  
+class LinuxOS: public OS  
+{  
+public:  
+    void InstallOS_Imp() { cout<<"安装Linux操作系统"<<endl; }   
+};  
+class UnixOS: public OS  
+{  
+public:  
+    void InstallOS_Imp() { cout<<"安装Unix操作系统"<<endl; }   
+};
+
+
+//计算机  
+class Computer  
+{  
+public:  
+    virtual void InstallOS(OS *os) {}  
+};  
+class DellComputer: public Computer  
+{  
+public:  
+    void InstallOS(OS *os) { os->InstallOS_Imp(); }  
+};  
+class AppleComputer: public Computer  
+{  
+public:  
+    void InstallOS(OS *os) { os->InstallOS_Imp(); }  
+};  
+class HPComputer: public Computer  
+{  
+public:  
+    void InstallOS(OS *os) { os->InstallOS_Imp(); }  
+};
+
+int main()  
+{  
+    OS *os1 = new WindowOS();  
+    OS *os2 = new LinuxOS();  
+    Computer *computer1 = new AppleComputer();  
+    computer1->InstallOS(os1);  
+    computer1->InstallOS(os2);  
+}
+```
+
+## 绘制图形
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 桥接模式
+ * 它旨在将抽象部分与实现部分分离开来，从而使它们可以独立地变化。
+ */
+#include <iostream>
+using namespace std;
+
+
+// 抽象部分的接口
+class Shape
+{
+public:
+  virtual void draw() = 0;
+};
+
+// 抽象部分的实现
+class Circle : public Shape
+{
+public:
+  Circle(double x, double y, double radius, DrawingAPI *drawingAPI)
+      : m_x(x), m_y(y), m_radius(radius), m_drawingAPI(drawingAPI) {}
+  void draw() override
+  {
+    m_drawingAPI->drawCircle(m_x, m_y, m_radius);
+  }
+
+private:
+  double m_x;
+  double m_y;
+  double m_radius;
+  DrawingAPI *m_drawingAPI;
+};
+
+// 抽象部分的实现
+class Rectangle : public Shape
+{
+public:
+  Rectangle(double x1, double y1, double x2, double y2, DrawingAPI *drawingAPI)
+      : m_x1(x1), m_y1(y1), m_x2(x2), m_y2(y2), m_drawingAPI(drawingAPI) {}
+  void draw() override
+  {
+    m_drawingAPI->drawRectangle(m_x1, m_y1, m_x2, m_y2);
+  }
+
+private:
+  double m_x1;
+  double m_y1;
+  double m_x2;
+  double m_y2;
+  DrawingAPI *m_drawingAPI;
+};
+
+// 实现部分的接口
+class DrawingAPI
+{
+public:
+  virtual void drawCircle(double x, double y, double radius) = 0;
+  virtual void drawRectangle(double x1, double y1, double x2, double y2) = 0;
+};
+
+// 具体的实现部分
+class DrawingAPI1 : public DrawingAPI
+{
+public:
+  void drawCircle(double x, double y, double radius) override
+  {
+    cout << "API1.circle at " << x << ',' << y << ' ' << radius << endl;
+  }
+  void drawRectangle(double x1, double y1, double x2, double y2) override
+  {
+    cout << "API1.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
+  }
+};
+
+// 具体的实现部分
+class DrawingAPI2 : public DrawingAPI
+{
+public:
+  void drawCircle(double x, double y, double radius) override
+  {
+    cout << "API2.circle at " << x << ',' << y << ' ' << radius << endl;
+  }
+  void drawRectangle(double x1, double y1, double x2, double y2) override
+  {
+    cout << "API2.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
+  }
+};
+
+
+
+int main()
+{
+  DrawingAPI1 api1;
+  DrawingAPI2 api2;
+
+  Circle circle1(1, 2, 3, &api1);
+  Rectangle rectangle1(0, 0, 1, 1, &api1);
+
+  Circle circle2(4, 5, 6, &api2);
+  Rectangle rectangle2(2, 2, 3, 3, &api2);
+
+  circle1.draw();
+  rectangle1.draw();
+  circle2.draw();
+  rectangle2.draw();
+
+  return 0;
+}
+```
