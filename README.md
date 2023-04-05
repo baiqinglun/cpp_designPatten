@@ -827,3 +827,272 @@ int main() {
     return 0;
 }
 ```
+
+# 7、外观模式
+C++外观模式是一种设计模式，它提供了一个简单的接口，用于访问复杂系统的子系统。外观模式隐藏了系统的复杂性，并为客户端提供了一个简单的接口，以便于使用系统。
+
+在C++中，外观模式通常涉及到一个外观类，该类封装了**子系统**的复杂性，并提供了一个简单的接口，用于访问子系统的功能。客户端只需要与外观类交互，并不需要了解子系统的工作原理。
+
+下面以数值迷你过程举例，数值模拟一般包括建模、划分网格、计算和后处理4部分。
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405200558.png)
+
+示例代码如下
+
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 外观模式
+ * 当一个系统很复杂时，系统提供给客户的是一个简单的对外接口，而把里面复杂的结构都封装了起来。
+ */
+
+#include <iostream>
+using namespace std;
+
+class Model{
+public:
+  void createModel(){
+    cout << "建模" << endl;
+  }
+};
+
+class Mesh{
+public:
+  void createMesh(){
+    cout << "划分网格" << endl;
+  }
+};
+
+class Caculate{
+public:
+  void numericalCalculation(){
+    cout << "数值计算" << endl;
+  }
+};
+
+class PostProcess{
+public:
+  void pprocess(){
+    cout << "后处理" << endl;
+  }
+};
+
+class Simulation{
+public:
+  Simulation():model_(new Model()),mesh_(new Mesh()),cal_(new Caculate()),post_(new PostProcess()){};
+  void simulate(){
+    model_->createModel();
+    mesh_->createMesh();
+    cal_->numericalCalculation();
+    post_->pprocess();
+  }
+private:
+  Model *model_;
+  Mesh *mesh_;
+  Caculate *cal_;
+  PostProcess *post_;
+};
+
+int main()
+{
+  Simulation s;
+  s.simulate();
+
+  return 0;
+}
+```
+
+# 8、组合模式
+
+C++组合模式是一种设计模式，它允许我们将对象组成<u>**树形**</u>结构，以表示“整体/部分”层次结构。组合模式使我们能够以一致的方式处理单个对象和对象的组合。
+
+在C++中，组合模式通常涉及到一个组件类，该类定义了表示“整体/部分”层次结构的所有对象的通用接口。组件类可以是抽象的，也可以是具体的。
+
+组件类可以有子类，这些子类可以是叶子节点，也可以是组合节点。叶子节点表示树中的单个对象，而组合节点表示树中的对象组合。组合节点可以包含一个或多个子节点，这些子节点可以是叶子节点，也可以是组合节点。
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405205839.png)
+
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 组合模式
+ * 对象组合成树形结构以表示“部分-整体”的层次结构。组合使得用户对单个对象和组合对象的使用具有一致性
+ */
+#include <iostream>
+#include <list>
+using namespace std;
+
+class Item
+{
+public:
+  Item(string name) : name_(name){};
+  virtual ~Item(){};
+  virtual void Add(Item *aItem){};
+  virtual void Show(int depth){};
+
+protected:
+  string name_;
+};
+
+class Folder : public Item
+{
+public:
+  Folder(string name) : Item(name){};
+  ~Folder() override{};
+  void Add(Item *aItem)
+  {
+    item_list_.push_back(aItem);
+  };
+  void Show(int depth)
+  {
+    for (int i = 0; i < depth; i++)
+    {
+      /* code */
+      cout << "-";
+    }
+    cout << name_ << endl;
+    list<Item *>::iterator iter = item_list_.begin();
+    for (; iter != item_list_.end(); iter++)
+    {
+      /* code */
+      (*iter)->Show(depth + 2);
+    }
+  }
+
+private:
+  list<Item *> item_list_;
+};
+
+class GraphicsA : public Item
+{
+public:
+  GraphicsA(string name) : Item(name){};
+  ~GraphicsA() override{};
+  void Show(int depth)
+  {
+    for (int i = 0; i < depth; i++)
+    {
+      cout << "-";
+    }
+    cout << name_ << endl;
+  }
+};
+
+class GraphicsB : public Item
+{
+public:
+  GraphicsB(string name) : Item(name){};
+  ~GraphicsB() override{};
+  void Show(int depth)
+  {
+    for (int i = 0; i < depth; i++)
+    {
+      cout << "-";
+    }
+    cout << name_ << endl;
+  }
+};
+
+int main()
+{
+  Item *root = new Folder("总分组");
+  Item *b1 = new GraphicsA("球1");
+  Item *c1 = new GraphicsB("立方体1");
+  root->Add(b1);
+  root->Add(c1);
+
+  Item *f1 = new Folder("分组1");
+  Item *b2 = new GraphicsA("球2");
+  Item *c2 = new GraphicsB("立方体2");
+  f1->Add(b2);
+  f1->Add(c2);
+  root->Add(f1);
+
+  root->Show(0);
+
+  delete root;
+  delete b1;
+  delete c1;
+  delete f1;
+  delete b2;
+  delete c2;
+  return 0;
+}
+```
+输出
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405204311.png)
+
+> 注意这里的show函数传入了一个深度，深度递增+2.root调用时show传入的为0，b1、c1和f1传入时show调用的是2，b2和c2调用时传入的是4.
+> 
+上面的实现方式有缺点，就是内存的释放不好，需要客户自己动手，非常不方便。有待改进，比较好的做法是让Folder类来释放。因为所有的指针都是存在Folder类的链表中。
+
+# 9、代理模式
+
+允许我们提供一个代理对象来<u>**控制对另一个对象的访问**</u>。代理模式使我们能够在不改变原始对象的情况下，增强其功能或控制其访问。
+
+在C++中，代理模式通常涉及到一个代理类和一个原始类。代理类实现了与原始类相同的接口，并在其内部维护一个对原始对象的引用。代理类可以拦截对原始对象的访问，并根据需要将其转发给原始对象。
+
+主要分为（1）远程代理，（2）虚代理，（3）保护代理，（4）智能引用。本文主要介绍虚代理和智能引用两种情况。
+
+## 9.1 虚代理
+
+![代理模式](https://mmbiz.qpic.cn/mmbiz_jpg/8pECVbqIO0y4v6U2GWEqj1wOpq0tQgnKBOPUTlooMiaDichaA8sjurqucSvLElA54Ib0IayKdpXhia3p0Bz6ZwxpQ/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1)
+
+```c++
+/*
+ * Created by 23984 on 2023/4/5.
+ * 代理模式
+ * 允许我们提供一个代理对象来控制对另一个对象的访问。代理模式使我们能够在不改变原始对象的情况下，增强其功能或控制其访问。
+ */
+#include <iostream>
+using namespace std;
+
+// 图片基类
+class Image  
+{  
+public:  
+    Image(string name): imageName_(name) {}  
+    virtual ~Image() {}  
+    virtual void Show() {}  
+protected:  
+    string imageName_;  
+};  
+
+// 大图片
+class BigImage: public Image  
+{  
+public:  
+    BigImage(string name):Image(name) {}  
+    ~BigImage() {}  
+    void Show() { cout<<"Show big image : "<<imageName_<<endl; }  
+};  
+
+// 大图片代理
+class BigImageProxy: public Image  
+{  
+private:  
+    BigImage *bigImage_;  // 大图片
+public:  
+    BigImageProxy(string name):Image(name),bigImage_(nullptr) {}  
+    ~BigImageProxy() { delete bigImage_; }  
+    void Show()   
+    {  
+        if(bigImage_ == nullptr)  
+            bigImage_ = new BigImage(imageName_);  
+        bigImage_->Show();  
+    }  
+};
+
+int main() {
+    Image *image = new BigImageProxy("proxy.jpg"); //代理  
+    image->Show(); //需要时由代理负责打开  
+    delete image;  
+
+    return 0;
+}
+
+```
+
+## 9.2 引用代理
+auto_ptr
