@@ -6,6 +6,42 @@
 #include <iostream>
 using namespace std;
 
+// 实现部分的接口
+class DrawingAPI
+{
+public:
+  virtual void drawCircle(double x, double y, double radius) = 0;
+  virtual void drawRectangle(double x1, double y1, double x2, double y2) = 0;
+};
+
+// 具体的实现部分
+class DrawingAPI1 : public DrawingAPI
+{
+public:
+  void drawCircle(double x, double y, double radius) override
+  {
+    cout << "API1.circle at " << x << ',' << y << ' ' << radius << endl;
+  }
+  void drawRectangle(double x1, double y1, double x2, double y2) override
+  {
+    cout << "API1.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
+  }
+};
+
+// 具体的实现部分
+class DrawingAPI2 : public DrawingAPI
+{
+public:
+  void drawCircle(double x, double y, double radius) override
+  {
+    cout << "API2.circle at " << x << ',' << y << ' ' << radius << endl;
+  }
+  void drawRectangle(double x1, double y1, double x2, double y2) override
+  {
+    cout << "API2.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
+  }
+};
+
 
 // 抽象部分的接口
 class Shape
@@ -50,44 +86,6 @@ private:
   double m_y2;
   DrawingAPI *m_drawingAPI;
 };
-
-// 实现部分的接口
-class DrawingAPI
-{
-public:
-  virtual void drawCircle(double x, double y, double radius) = 0;
-  virtual void drawRectangle(double x1, double y1, double x2, double y2) = 0;
-};
-
-// 具体的实现部分
-class DrawingAPI1 : public DrawingAPI
-{
-public:
-  void drawCircle(double x, double y, double radius) override
-  {
-    cout << "API1.circle at " << x << ',' << y << ' ' << radius << endl;
-  }
-  void drawRectangle(double x1, double y1, double x2, double y2) override
-  {
-    cout << "API1.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
-  }
-};
-
-// 具体的实现部分
-class DrawingAPI2 : public DrawingAPI
-{
-public:
-  void drawCircle(double x, double y, double radius) override
-  {
-    cout << "API2.circle at " << x << ',' << y << ' ' << radius << endl;
-  }
-  void drawRectangle(double x1, double y1, double x2, double y2) override
-  {
-    cout << "API2.rectangle at " << x1 << ',' << y1 << " to " << x2 << ',' << y2 << endl;
-  }
-};
-
-
 
 int main()
 {
