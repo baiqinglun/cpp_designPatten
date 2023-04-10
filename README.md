@@ -1508,3 +1508,194 @@ int main()
   return 0;
 }
 ```
+
+# 12、装饰模式
+
+C++中的装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变对象自身的基础上，动态地给一个对象添加额外的职责。装饰器模式以对客户端透明的方式扩展对象的功能。
+
+装饰器模式的核心思想是：将对象嵌套在一系列装饰器中，每个装饰器都为对象增加一些功能。装饰器和被装饰的对象都实现相同的接口，这样装饰器就可以完全替代被装饰的对象。
+
+比如有一个手机，允许你为手机添加特性，比如增加挂件、屏幕贴膜等。一种灵活的设计方式是，将手机嵌入到另一对象中，由这个对象完成特性的添加，我们称这个嵌入的对象为装饰。这个装饰与它所装饰的组件接口一致，因此它对使用该组件的客户透明。
+
+![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/202304101648512.png)
+
+代码演示
+```c++
+#include <iostream>
+using namespace std;
+
+// 手机类
+class Phone
+{
+public:
+  Phone(){};
+  virtual ~Phone(){};
+  virtual void ShowDecorate(){};
+};
+
+class iPhone : public Phone
+{
+private:
+  string m_name;
+
+public:
+  iPhone(string name) : m_name(name){};
+  ~iPhone(){};
+  void ShowDecorate() override { cout << m_name << "的装饰："; }
+};
+
+class NokiiaPhone : public Phone
+{
+private:
+  string m_name;
+
+public:
+  NokiiaPhone(string name) : m_name(name){};
+  ~NokiiaPhone(){};
+  void ShowDecorate() override { cout << m_name << "的装饰："; }
+};
+
+// 装饰器基类
+class DecoratorPhone : public Phone
+{
+private:
+  Phone *m_phone;
+
+public:
+  DecoratorPhone(Phone *phone) : m_phone(phone){};
+  ~DecoratorPhone(){};
+  virtual void ShowDecorate() { m_phone->ShowDecorate(); };
+};
+
+// 挂件装饰器
+class DecoratorPhoneA : public DecoratorPhone
+{
+public:
+  DecoratorPhoneA(Phone *phone) : DecoratorPhone(phone){};
+  void ShowDecorate()
+  {
+    DecoratorPhone::ShowDecorate();
+    AddDecorate();
+  }
+
+private:
+  void AddDecorate()
+  {
+    cout << "增加挂件" << endl;
+  }
+};
+
+// 贴膜装饰器
+class DecoratorPhoneB : public DecoratorPhone
+{
+public:
+  DecoratorPhoneB(Phone *phone) : DecoratorPhone(phone){};
+  void ShowDecorate()
+  {
+    DecoratorPhone::ShowDecorate();
+    AddDecorate();
+  }
+
+private:
+  void AddDecorate()
+  {
+    cout << "屏幕贴膜" << endl;
+  }
+};
+```
+测试
+```c++
+int main()
+{
+  Phone *iphone = new NokiiaPhone("6300");
+  Phone *dpa = new DecoratorPhoneA(iphone);
+  Phone *dpb = new DecoratorPhoneB(iphone);
+  dpb->ShowDecorate();
+  delete dpa;
+  delete dpb;
+  delete iphone;
+  return 0;
+}
+```
+输出
+
+6300的装饰：屏幕贴膜
+
+# 13、备忘录模式
+备忘录模式是一种行为型设计模式，用于在不破坏封装性的前提下，捕获和恢复对象的内部状态。该模式常常被用于需要在某个时刻保存对象的状态，并在以后的某个时刻恢复该状态的情形。备忘录模式的核心是定义了一个备忘录对象，用于存储当前对象的状态，以便在需要恢复状态时使用。
+
+在 C++ 中，实现备忘录模式通常需要定义三个角色：
+1. 原始对象是需要保存状态的对象；
+2. 备忘录对象负责存储原始对象的状态；
+3. 管理者对象则负责管理备忘录对象，通常包括存储备忘录对象、撤销操作等功能。
+
+这样以后就可将该对象恢复到原先保存的状态。举个简单的例子，我们玩游戏时都会保存进度，所保存的进度以文件的形式存在。这样下次就可以继续玩，而不用从头开始。这里的进度其实就是游戏的内部状态，而这里的文件相当于是在游戏之外保存状态。这样，下次就可以从文件中读入保存的进度，从而恢复到原来的状态。这就是备忘录模式。
+
+**代码演示**
+```c++
+//需保存的信息  
+class Memento    
+{  
+public:  
+    int m_vitality; //生命值  
+    int m_attack;   //进攻值  
+    int m_defense;  //防守值  
+public:  
+    Memento(int vitality, int attack, int defense):   
+      m_vitality(vitality),m_attack(attack),m_defense(defense){}  
+    Memento& operator=(const Memento &memento)   
+    {  
+        m_vitality = memento.m_vitality;  
+        m_attack = memento.m_attack;  
+        m_defense = memento.m_defense;  
+        return *this;  
+    }  
+};  
+//游戏角色  
+class GameRole    
+{  
+private:  
+    int m_vitality;  
+    int m_attack;  
+    int m_defense;  
+public:  
+    GameRole(): m_vitality(100),m_attack(100),m_defense(100) {}  
+    Memento Save()  //保存进度，只与Memento对象交互，并不牵涉到Caretake  
+    {   
+        Memento memento(m_vitality, m_attack, m_defense);  
+        return memento;  
+    }  
+    void Load(Memento memento)  //载入进度，只与Memento对象交互，并不牵涉到Caretake  
+    {  
+        m_vitality = memento.m_vitality;  
+        m_attack = memento.m_attack;   
+        m_defense = memento.m_defense;  
+    }  
+    void Show() { cout<<"vitality : "<< m_vitality<<", attack : "<< m_attack<<", defense : "<< m_defense<<endl; }  
+    void Attack() { m_vitality -= 10; m_attack -= 10;  m_defense -= 10; }  
+};  
+//保存的进度库  
+class Caretake    
+{  
+public:  
+    Caretake() {}  
+    void Save(Memento menento) { m_vecMemento.push_back(menento); }  
+    Memento Load(int state) { return m_vecMemento[state]; }  
+private:  
+    vector<Memento> m_vecMemento;  
+};
+```
+测试
+```c++
+int main(){
+    Caretake caretake;  //保存的进度库 
+    GameRole role;  //游戏角色  
+    role.Show();   //初始值  
+    caretake.Save(role.Save()); //保存状态  
+    role.Attack();     
+    role.Show();  //进攻后  
+    role.Load(caretake.Load(0)); //载入状态   
+    role.Show();  //恢复到状态0  
+    return 0;  
+}
+```

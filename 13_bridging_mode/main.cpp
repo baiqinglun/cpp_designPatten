@@ -42,7 +42,6 @@ public:
   }
 };
 
-
 // 抽象部分的接口
 class Shape
 {
