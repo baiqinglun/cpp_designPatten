@@ -1913,3 +1913,93 @@ int main()
 输出
 
 ![房产中介](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412184109.png)
+
+## 15、职责链模式
+
+1. 是一种行为设计模式，它允许你将请求沿着处理者链进行发送，直到有一个处理者能够处理该请求为止。
+2. 在职责链模式中，你可以为多个对象设置处理请求的机会。这些对象形成一条链，请求在链上传递，直到链上的某个对象能够处理该请求为止。通常情况下，链上的每个对象都有其自己的处理逻辑，以及对下一个处理者的引用。
+3. 在实现职责链模式时，你需要创建一个抽象处理者类，用于定义请求的处理方法和下一个处理者的引用。然后，你需要为每个具体的处理者创建一个子类，实现其自己的处理逻辑。最后，你需要将这些处理者组成一条链，并将请求沿着链进行传递。
+4. 其思想很简单，考虑员工要求加薪。公司的管理者一共有三级，总经理、总监、经理，如果一个员工要求加薪，应该向主管的经理申请，如果加薪的数量在经理的职权内，那么经理可以直接批准，否则将申请上交给总监。总监的处理方式也一样，总经理可以处理所有请求。这就是典型的职责链模式，请求的处理形成了一条链，直到有一个对象处理请求。
+
+![职责链模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412232935.png)
+
+```c++
+#include<iostream>
+using namespace std;
+
+//抽象管理者  
+class Manager  
+{  
+protected:  
+    Manager *m_manager;  
+    string m_name;  
+public:  
+    Manager(Manager *manager, string name):m_manager(manager), m_name(name){}  
+    virtual void DealWithRequest(string name, int num)  {}  
+};
+
+//经理  
+class CommonManager: public Manager  
+{  
+public:  
+    CommonManager(Manager *manager, string name):Manager(manager,name) {}  
+    void DealWithRequest(string name, int num)   
+    {  
+        if(num < 500) //经理职权之内  
+        {  
+            cout<<"经理"<<m_name<<"批准"<<name<<"加薪"<<num<<"元"<<endl<<endl;  
+        }  
+        else  
+        {  
+            cout<<"经理"<<m_name<<"无法处理，交由总监处理"<<endl;  
+            m_manager->DealWithRequest(name, num);  
+        }  
+    }  
+};
+
+//总监  
+class Majordomo: public Manager  
+{  
+public:  
+    Majordomo(Manager *manager, string name):Manager(manager,name) {}  
+    void DealWithRequest(string name, int num)   
+    {  
+        if(num < 1000) //总监职权之内  
+        {  
+            cout<<"总监"<<m_name<<"批准"<<name<<"加薪"<<num<<"元"<<endl<<endl;  
+        }  
+        else  
+        {  
+            cout<<"总监"<<m_name<<"无法处理，交由总经理处理"<<endl;  
+            m_manager->DealWithRequest(name, num);  
+        }  
+    }  
+}; 
+
+//总经理  
+class GeneralManager: public Manager  
+{  
+public:  
+    GeneralManager(Manager *manager, string name):Manager(manager,name) {}  
+    void DealWithRequest(string name, int num)  //总经理可以处理所有请求  
+    {  
+        cout<<"总经理"<<m_name<<"批准"<<name<<"加薪"<<num<<"元"<<endl<<endl;  
+    }  
+};
+
+int main()
+{
+    Manager *general = new GeneralManager(NULL, "A"); //设置上级，总经理没有上级  
+    Manager *majordomo = new Majordomo(general, "B"); //设置上级  
+    Manager *common = new CommonManager(majordomo, "C"); //设置上级  
+    common->DealWithRequest("D",300);   //员工D要求加薪  
+    common->DealWithRequest("E", 600);  
+    common->DealWithRequest("F", 1000);  
+    delete common; delete majordomo; delete general;  
+    return 0;  
+}
+```
+
+输出
+
+![输出](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412233008.png)
