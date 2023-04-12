@@ -1832,3 +1832,84 @@ int main() {
 输出
 
 ![输出](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412123322.png)
+
+房屋中介案例
+
+```c++
+#include<iostream>
+#include<vector>
+using namespace std;
+
+class Mediator;
+
+class Person{
+public:
+    virtual void SendMessage(string msg){};
+    virtual void GetMessage(string msg){};
+    virtual void SetMediator(Mediator* mediator){};
+};
+
+class Mediator{
+public:
+    virtual void AddPerson(Person* person){}
+    virtual void SendMessage(string msg,Person* person){}
+};
+
+class MediatorA : public Mediator{
+private:
+    vector<Person*> person_vector_;
+public:
+    void AddPerson(Person* person){
+        person_vector_.push_back(person);
+    }
+    void SendMessage(string msg,Person* person){
+        for (auto aPerson : person_vector_){
+            if(aPerson != person){
+                aPerson->GetMessage(msg);
+            }
+        }
+        
+    }
+};
+
+class PersonA : public Person{
+protected:
+    Mediator *mediator_;
+    string name_;
+public:
+    PersonA(string name):name_(name){};
+    void SendMessage(string msg){
+        mediator_->SendMessage(msg,this);
+    };
+    void GetMessage(string msg){
+        cout << name_ << "获得信息" << msg << endl;
+    };
+    void SetMediator(Mediator* mediator){
+        this->mediator_ = mediator;
+    };
+};
+
+
+int main()
+{
+    MediatorA med1;
+    Person *personA = new PersonA("person1");
+    Person *personB = new PersonA("person2");
+    Person *personC = new PersonA("person3");
+
+    personA->SetMediator(&med1);
+    personB->SetMediator(&med1);
+
+    med1.AddPerson(personA);
+    med1.AddPerson(personB);
+    med1.AddPerson(personC);
+
+    personA->SendMessage("你好");
+
+    return 0;
+}
+```
+
+输出
+
+![房产中介](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412184109.png)
