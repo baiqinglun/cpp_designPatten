@@ -20,6 +20,7 @@ public:
         return *this;  
     }  
 };  
+
 //游戏角色  
 class GameRole    
 {  
@@ -43,6 +44,7 @@ public:
     void Show() { cout<<"vitality : "<< m_vitality<<", attack : "<< m_attack<<", defense : "<< m_defense<<endl; }  
     void Attack() { m_vitality -= 10; m_attack -= 10;  m_defense -= 10; }  
 };  
+
 //保存的进度库  
 class Caretake    
 {  

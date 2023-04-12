@@ -1,9 +1,10 @@
 # cpp_objectModel
+
 c++对象模型
 
-# 1、工厂模式
+## 1、工厂模式
 
-## 1.1 简单工厂
+### 1.1 简单工厂
 
 1. 定义一个图形抽象类,类中添加绘制图形的纯虚函数,球形类和长方体继承该图形抽象类,并重写纯虚函数.
 2. 定义一个工厂Factory用于创建图形.工厂中有个create函数可以根据传入的参数new一个相应的图形并返回.
@@ -75,7 +76,7 @@ int main(){
 
 ```
 
-## 1.2 工厂方法模式
+### 1.2 工厂方法模式
 
 简单工厂每次新增创建图形类，就需要修改Factory工厂的创建方法,违反了开放开放封闭原则。
 
@@ -152,7 +153,7 @@ int main(){
 
 ```
 
-## 1.3 抽象工厂
+### 1.3 抽象工厂
 
 是工厂方法模式的一种演变。有时候我们需要创建静态或者会动的球形或者长方体，抽象工厂应运而生。
 
@@ -266,7 +267,7 @@ int main(){
 
 ```
 
-# 2、策略模式
+## 2、策略模式
 
 将一个类的行为委托给另一个类实现。
 
@@ -308,7 +309,8 @@ public:
 - 构造函数传入算法对象；
 - 构造函数传入算法类型，在构造函数中new一个算法；
 - 避免传入参数，使用模板实现。
-  **方法一**
+
+方法一
 
 ```c++
 // 方法一  
@@ -340,7 +342,7 @@ int main()
 }
 ```
 
-**方法二**
+方法二
 
 ```c++
 enum ALGORITHM_TYPE{  
@@ -389,7 +391,7 @@ int main(){
 }
 ```
 
-**方法三**
+方法三
 
 ```c++
 template <class RA>  
@@ -433,7 +435,7 @@ int main(){
 }
 ```
 
-# 3、适配器模式
+## 3、适配器模式
 
 C++适配器模式（Adapter Pattern）是一种结构型设计模式，它允许将不兼容的接口转换为客户端希望的接口。
 适配器模式通常使用在以下场景：
@@ -525,7 +527,7 @@ int main(){
 // Deque pop_front
 ```
 
-# 4、单例模式
+## 4、单例模式
 单例模式是一种常见的软件设计模式，它保证*一个类只有一个实例*，并且提供一个全局访问点来访问该实例。
 
 在单例模式中，通常会将类的构造函数私有化，以避免外部代码直接创建该类的对象实例。同时，该类会定义一个静态方法或静态成员变量来访问类的唯一实例。如果该实例不存在，则该静态方法或成员变量会创建一个新的实例，并返回该实例；如果实例已经存在，则直接返回该实例。
@@ -633,6 +635,7 @@ Singleton *Singleton::getInstance(const char *name)
 ```
 
 测试
+
 ```c++
 int main()
 {
@@ -644,6 +647,7 @@ int main()
    return 0;
 }
 ```
+
 如果不delete掉st，再赋值为singletonB没有反应
 
 ```c++
@@ -658,17 +662,19 @@ int main()
    return 0;
 }
 ```
+
 这样也不行，还是只要st存在，就会返回Singleton::singleton
 
-# 5、原型模式
+## 5、原型模式
+
 1. 原型模式（Prototype Pattern）是一种**创建型设计模式**，它允许通过复制现有对象来创建新的对象，而无需知道对象的具体实现细节。在原型模式中，我们可以将现有对象作为原型，然后通过复制该原型来创建新的对象。
 2. 使用原型模式的一个显著优点是可以避免重复创建相似的对象，从而提高程序的性能和效率。另外，原型模式也可以用来隐藏对象创建的细节，从而使代码更加简洁和易于维护。
 3. 在实现原型模式时，通常需要在原型类中定义一个clone()方法，用于创建并返回一个新的对象实例。**clone()**方法通常会先创建一个与原型对象相同类型的新对象，然后将原型对象的状态复制到新对象中，最后返回新对象。在C++中，我们可以使用拷贝构造函数或赋值运算符来实现对象的复制。
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405153846.png)
+![原型模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405153846.png)
 
+代码示例
 
-**代码示例**
 ```c++
 class Shape {
 public:
@@ -703,12 +709,17 @@ public:
     }
 };
 ```
+
 > `return new Circle(*this);`
+> 
 > // return new Circle(*this) 的作用是创建一个新的 Circle 对象，并返回该对象的指针，从而实现了原型模式的复制功能
+> 
 > // *this指的是当前的Circle对象
+> 
 > // new Circle(*this)会调用拷贝构造函数
 
-**测试**
+测试
+
 ```c++
 
 int main()
@@ -727,7 +738,7 @@ int main()
 }
 ```
 
-# 6、建造者模式
+## 6、建造者模式
 
 建造者模式（Builder Pattern）是一种创建型设计模式，它允许你使用相同的构建过程来创建不同的表示形式。
 
@@ -740,7 +751,7 @@ int main()
 3. Concrete Builder（具体建造者）：负责实现 Builder 接口，以定义产品的各个部件的具体构建方式。
 4. Product（产品）：要创建的复杂对象，通常由多个部件组成。
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405160820.png)
+![建造者模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405160820.png)
 
 ```c++
 /*
@@ -828,14 +839,14 @@ int main() {
 }
 ```
 
-# 7、外观模式
+## 7、外观模式
 C++外观模式是一种设计模式，它提供了一个简单的接口，用于访问复杂系统的子系统。外观模式隐藏了系统的复杂性，并为客户端提供了一个简单的接口，以便于使用系统。
 
 在C++中，外观模式通常涉及到一个外观类，该类封装了**子系统**的复杂性，并提供了一个简单的接口，用于访问子系统的功能。客户端只需要与外观类交互，并不需要了解子系统的工作原理。
 
 下面以数值迷你过程举例，数值模拟一般包括建模、划分网格、计算和后处理4部分。
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405200558.png)
+![外观模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405200558.png)
 
 示例代码如下
 
@@ -902,7 +913,7 @@ int main()
 }
 ```
 
-# 8、组合模式
+## 8、组合模式
 
 C++组合模式是一种设计模式，它允许我们将对象组成<u>**树形**</u>结构，以表示“整体/部分”层次结构。组合模式使我们能够以一致的方式处理单个对象和对象的组合。
 
@@ -910,7 +921,7 @@ C++组合模式是一种设计模式，它允许我们将对象组成<u>**树形
 
 组件类可以有子类，这些子类可以是叶子节点，也可以是组合节点。叶子节点表示树中的单个对象，而组合节点表示树中的对象组合。组合节点可以包含一个或多个子节点，这些子节点可以是叶子节点，也可以是组合节点。
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405205839.png)
+![组合模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405205839.png)
 
 ```c++
 /*
@@ -1019,15 +1030,16 @@ int main()
   return 0;
 }
 ```
+
 输出
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405204311.png)
+![组合模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230405204311.png)
 
 > 注意这里的show函数传入了一个深度，深度递增+2.root调用时show传入的为0，b1、c1和f1传入时show调用的是2，b2和c2调用时传入的是4.
 > 
 上面的实现方式有缺点，就是内存的释放不好，需要客户自己动手，非常不方便。有待改进，比较好的做法是让Folder类来释放。因为所有的指针都是存在Folder类的链表中。
 
-# 9、代理模式
+## 9、代理模式
 
 允许我们提供一个代理对象来<u>**控制对另一个对象的访问**</u>。代理模式使我们能够在不改变原始对象的情况下，增强其功能或控制其访问。
 
@@ -1035,7 +1047,7 @@ int main()
 
 主要分为（1）远程代理，（2）虚代理，（3）保护代理，（4）智能引用。本文主要介绍虚代理和智能引用两种情况。
 
-## 9.1 虚代理
+### 9.1 虚代理
 
 ![代理模式](https://mmbiz.qpic.cn/mmbiz_jpg/8pECVbqIO0y4v6U2GWEqj1wOpq0tQgnKBOPUTlooMiaDichaA8sjurqucSvLElA54Ib0IayKdpXhia3p0Bz6ZwxpQ/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1)
 
@@ -1094,7 +1106,7 @@ int main() {
 
 ```
 
-## 9.2 引用代理
+### 9.2 引用代理
 手写一个auto_ptr
 ```c++
 #include <iostream>
@@ -1147,13 +1159,16 @@ int main()
   return 0;
 }
 ```
-# 10、享元模式
+
+## 10、享元模式
+
 1. C++中的享元模式是一种**结构型设计模式**，它旨在通过共享对象来最小化内存使用和对象创建的开销。
 2. 在享元模式中，对象的状态被分为**内部状态**和**外部状态**，其中内部状态是对象的固有属性，而外部状态则是在运行时由客户端传递给对象的信息。
 3. 在C++中，实现享元模式需要定义一个享元工厂类和一个享元类。
 4. 享元工厂类负责创建和管理享元对象，而享元类则负责存储和处理对象的内部状态和外部状态。
 
 比如：在设计一款游戏时，里面有很多的怪物，这些怪物虽然分为不同的类别，但每种都有自己的血条、攻击力和防御力。
+
 1. 定义一个map，用于存储哥布林、兽人和龙；
 2. 创建哥布林对象，如果已经存在哥布林对象，返回已存在的哥布林的引用，否则新建哥布林对象；
 3. 可以验证g1和g2是同一个对象的引用。
@@ -1238,11 +1253,10 @@ int main()
 }
 ```
 
-## 绘制棋盘案例
+### 绘制棋盘案例
 1. 虽然棋盘上有很多的棋子，但他们不是白色都是黑色，每种颜色的属性都一致，只是位置不同。我们将位置单独存放。
 2. 创建白色棋子时，如果已经存在一个对象，就直接向容器中添加位置；如果不存在，则需要先创建，再添加位置；
 3. 这样所有的白色只享一个对象，极大地节约内存空间。
-
 
 ```c++
 #include <iostream>
@@ -1329,7 +1343,7 @@ int main()
 }
 ```
 
-# 11、桥接模式
+## 11、桥接模式
 
 C++中的桥接模式是一种结构型设计模式，**它旨在将抽象部分与实现部分分离开来，从而使它们可以独立地变化**。在桥接模式中，抽象部分和实现部分通过一个桥接接口进行连接，从而实现解耦和灵活性。
 
@@ -1396,7 +1410,8 @@ int main()
 }
 ```
 
-## 绘制图形
+### 绘制图形
+
 ```c++
 /*
  * Created by 23984 on 2023/4/5.
@@ -1509,7 +1524,7 @@ int main()
 }
 ```
 
-# 12、装饰模式
+## 12、装饰模式
 
 C++中的装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变对象自身的基础上，动态地给一个对象添加额外的职责。装饰器模式以对客户端透明的方式扩展对象的功能。
 
@@ -1517,9 +1532,10 @@ C++中的装饰器模式（Decorator Pattern）是一种结构型设计模式，
 
 比如有一个手机，允许你为手机添加特性，比如增加挂件、屏幕贴膜等。一种灵活的设计方式是，将手机嵌入到另一对象中，由这个对象完成特性的添加，我们称这个嵌入的对象为装饰。这个装饰与它所装饰的组件接口一致，因此它对使用该组件的客户透明。
 
-![](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/202304101648512.png)
+![装饰模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/202304101648512.png)
 
 代码演示
+
 ```c++
 #include <iostream>
 using namespace std;
@@ -1603,7 +1619,9 @@ private:
   }
 };
 ```
+
 测试
+
 ```c++
 int main()
 {
@@ -1617,21 +1635,27 @@ int main()
   return 0;
 }
 ```
+
 输出
 
 6300的装饰：屏幕贴膜
 
-# 13、备忘录模式
+## 13、备忘录模式
+
 备忘录模式是一种行为型设计模式，用于在不破坏封装性的前提下，捕获和恢复对象的内部状态。该模式常常被用于需要在某个时刻保存对象的状态，并在以后的某个时刻恢复该状态的情形。备忘录模式的核心是定义了一个备忘录对象，用于存储当前对象的状态，以便在需要恢复状态时使用。
 
 在 C++ 中，实现备忘录模式通常需要定义三个角色：
+
 1. 原始对象是需要保存状态的对象；
 2. 备忘录对象负责存储原始对象的状态；
 3. 管理者对象则负责管理备忘录对象，通常包括存储备忘录对象、撤销操作等功能。
 
 这样以后就可将该对象恢复到原先保存的状态。举个简单的例子，我们玩游戏时都会保存进度，所保存的进度以文件的形式存在。这样下次就可以继续玩，而不用从头开始。这里的进度其实就是游戏的内部状态，而这里的文件相当于是在游戏之外保存状态。这样，下次就可以从文件中读入保存的进度，从而恢复到原来的状态。这就是备忘录模式。
 
-**代码演示**
+![备忘录](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412115456.png)
+
+代码演示
+
 ```c++
 //需保存的信息  
 class Memento    
@@ -1685,7 +1709,9 @@ private:
     vector<Memento> m_vecMemento;  
 };
 ```
+
 测试
+
 ```c++
 int main(){
     Caretake caretake;  //保存的进度库 
@@ -1699,3 +1725,110 @@ int main(){
     return 0;  
 }
 ```
+
+## 14、中介者模式
+
+中介者模式是一种行为设计模式，它允许对象之间通过中介者进行通信，而不是直接互相通信。
+
+用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。
+
+通过A给B和C发信息,也可以通过B给A和C发信息
+
+![中介者模式](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412123204.png)
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+
+class Colleague;
+
+// 中介者类
+class Mediator {
+public:
+    virtual void sendMessage(const std::string& message, Colleague* colleague) = 0;
+};
+
+// 同事类
+class Colleague {
+public:
+    Colleague(Mediator* mediator) : m_mediator(mediator) {}
+
+    virtual void sendMessage(const std::string& message) {
+        m_mediator->sendMessage(message, this);
+    }
+
+    virtual void receiveMessage(const std::string& message) = 0;
+
+protected:
+    Mediator* m_mediator;
+};
+
+// 具体同事类
+class ConcreteColleagueA : public Colleague {
+public:
+    ConcreteColleagueA(Mediator* mediator) : Colleague(mediator) {}
+
+    void receiveMessage(const std::string& message) override {
+        std::cout << "ConcreteColleagueA received message: " << message << std::endl;
+    }
+};
+
+class ConcreteColleagueB : public Colleague {
+public:
+    ConcreteColleagueB(Mediator* mediator) : Colleague(mediator) {}
+
+    void receiveMessage(const std::string& message) override {
+        std::cout << "ConcreteColleagueB received message: " << message << std::endl;
+    }
+};
+
+class ConcreteColleagueC : public Colleague {
+public:
+    ConcreteColleagueC(Mediator* mediator) : Colleague(mediator) {}
+
+    void receiveMessage(const std::string& message) override {
+        std::cout << "ConcreteColleagueC received message: " << message << std::endl;
+    }
+};
+
+// 具体中介者类
+class ConcreteMediator : public Mediator {
+public:
+    void addColleague(Colleague* colleague) {
+        m_colleagues.push_back(colleague);
+    }
+
+    void sendMessage(const std::string& message, Colleague* sender) override {
+        for (auto colleague : m_colleagues) {
+            if (colleague != sender) {
+                colleague->receiveMessage(message);
+            }
+        }
+    }
+
+private:
+    std::vector<Colleague*> m_colleagues;
+};
+
+int main() {
+    ConcreteMediator mediator;
+
+    ConcreteColleagueA colleagueA(&mediator);
+    ConcreteColleagueB colleagueB(&mediator);
+    ConcreteColleagueC colleagueC(&mediator);
+
+    mediator.addColleague(&colleagueA);
+    mediator.addColleague(&colleagueB);
+    mediator.addColleague(&colleagueC);
+
+    colleagueA.sendMessage("Hello, colleagueB和C!");
+    colleagueB.sendMessage("Hi, colleagueA和C!");
+
+    return 0;
+}
+```
+
+输出
+
+![输出](https://test-123456-md-images.oss-cn-beijing.aliyuncs.com/img/20230412123322.png)
