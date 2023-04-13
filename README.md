@@ -2017,3 +2017,279 @@ int main()
 
 举个博客订阅的例子，当博主发表新文章的时候，即博主状态发生了改变，那些订阅的读者就会收到通知，然后进行相应的动作，比如去看文章，或者收藏起来。博主与读者之间存在种一对多的依赖关系。
 
+```c++
+#include <iostream>
+#include <vector>
+#include <list>
+
+using namespace std;
+
+//观察者  
+class Observer    
+{  
+public:  
+    Observer() {}  
+    virtual ~Observer() {}  
+    virtual void Update() {}   
+    virtual void Attach(){}
+    virtual void Remove(){}
+};
+
+//博客  
+class Blog    
+{  
+public:  
+    Blog() {}  
+    virtual ~Blog() {} 
+    //添加观察者  
+    void Attach(Observer *observer) 
+    {
+        m_observers.push_back(observer);cout << "订阅成功" <<endl;
+    }
+    //移除观察者 
+    void Remove(Observer *observer) 
+    { 
+        m_observers.remove(observer); 
+        cout << "取消订阅" <<endl;
+    }
+    //通知观察者      
+    void Notify()  
+    {  
+        list<Observer*>::iterator iter = m_observers.begin();  
+        for(; iter != m_observers.end(); iter++)  
+            (*iter)->Update();  
+    }  
+    virtual void SetStatus(string s) { m_status = s; } //设置状态  
+    virtual string GetStatus() { return m_status; }    //获得状态  
+private:  
+    list<Observer* > m_observers; //观察者链表  
+protected:  
+    string m_status; //状态  
+};
+
+//具体博客类  
+class BlogCSDN : public Blog  
+{  
+private:  
+    string m_name; //博主名称  
+public:  
+    BlogCSDN(string name): m_name(name) {}  
+    ~BlogCSDN() {}  
+    void SetStatus(string s) { m_status = "CSDN通知 : " + m_name + s; } //具体设置状态信息  
+    string GetStatus() { return m_status; }  
+};  
+//具体观察者  
+class ObserverBlog : public Observer     
+{  
+private:  
+    string m_name;  //观察者名称  
+    Blog *m_blog;   //观察的博客，当然以链表形式更好，就可以观察多个博客  
+public:   
+    ObserverBlog(string name,Blog *blog): m_name(name), m_blog(blog) {}  
+    ~ObserverBlog() {}  
+    void Update()  //获得更新状态  
+    {   
+        string status = m_blog->GetStatus();  
+        cout<<m_name<<"-------"<<status<<endl;  
+    }  
+    void Attach(){
+        m_blog->Attach(this);
+    }
+    void Remove(){
+        m_blog->Remove(this);
+    }
+};
+
+//测试案例  
+int main()  
+{  
+    Blog *blog = new BlogCSDN("博客1");  
+    Observer *observer1 = new ObserverBlog("观察者1", blog);
+    // 由粉丝调用
+    observer1->Attach();
+    // 由公众号经营者调用
+    blog->SetStatus("发表设计模式C++实现（15）——观察者模式"); 
+    // 由公众号经营者调用
+    blog->Notify();
+    // 由粉丝调用
+    observer1->Remove();
+
+    // 取消订阅后，观察者不会接受
+    blog->SetStatus("发表设计模式C++实现（16）——观察者模式"); 
+	blog->Notify();
+
+    delete blog;
+    delete observer1;  
+    return 0;  
+}
+```
+
+## 17、状态模式
+
+C++中状态模式是一种行为设计模式，它允许一个对象在内部状态改变时改变它的行为，看起来似乎改变了它的类。在状态模式中，我们创建表示各种状态的对象和一个行为随着状态对象改变而改变的对象。状态模式主要解决的是在对象状态转换的时候带来的复杂性问题。通常当一个对象的行为取决于它的状态，并且它必须在运行时根据状态改变它的行为时，这时候可以考虑使用状态模式。
+
+它有两种使用情况：
+
+1. 一个对象的行为取决于它的状态, 并且它必须在运行时刻根据状态改变它的行为。
+2. 一个操作中含有庞大的多分支的条件语句，且这些分支依赖于该对象的状态。
+
+实现：Context类包含一个当前状态对象指针m_state，当Context的Request()方法被调用时，会调用当前状态对象的Handle()方法来处理请求。同时，Context类还提供了一个SetState()方法，用于切换状态对象。具体的状态对象实现了State类的接口，并实现了它们自己的行为。
+
+```c++
+#include<iostream>
+using namespace std;
+
+// 抽象状态(State)基类
+class State {
+public:
+    virtual void Handle() = 0;
+};
+
+// 具体状态
+class ConcreteStateA : public State {
+public:
+    void Handle() override {
+        std::cout << "Handle state A." << std::endl;
+    }
+};
+
+class ConcreteStateB : public State {
+public:
+    void Handle() override {
+        std::cout << "Handle state B." << std::endl;
+    }
+};
+
+// 创建一个Context类，它包含一个当前状态对象和一些可以在状态对象之间转换的方法
+class Context {
+public:
+    void SetState(State* state) {
+        m_state = state;
+    }
+    void Request() {
+        m_state->Handle();
+    }
+private:
+    State* m_state;
+};
+
+
+int main(){
+    ConcreteStateA stateA;
+    ConcreteStateB stateB;
+
+    Context context;
+    context.SetState(&stateA);
+    context.Request();
+
+    context.SetState(&stateB);
+    context.Request();
+
+}
+```
+
+通过使用状态模式，我们可以避免在对象状态转换时引入大量的条件分支和复杂的if-else语句，使代码更加简洁和易于维护。当一个对象的行为取决于它的状态，并且它必须在运行时根据状态改变它的行为时，就可以考虑使用状态模式了。
+
+战争案例
+
+```c++
+#include<iostream>
+using namespace std;
+
+class War;  
+class State   
+{  
+public:  
+    virtual void Prophase() {}  
+    virtual void Metaphase() {}  
+    virtual void Anaphase() {}  
+    virtual void End() {}  
+    virtual void CurrentState(War *war) {}  
+};  
+//战争  
+class War  
+{  
+private:  
+    State *m_state;  //目前状态  
+    int m_days;      //战争持续时间  
+public:  
+    War(State *state): m_state(state), m_days(0) {}  
+    ~War() { delete m_state; }  
+    int GetDays() { return m_days; }  
+    void SetDays(int days) { m_days = days; }  
+    void SetState(State *state) { delete m_state; m_state = state; }  
+    void GetState() { m_state->CurrentState(this); }  
+};
+
+//战争结束  
+class EndState: public State  
+{  
+public:  
+    void End(War *war) //结束阶段的具体行为  
+    {  
+        cout<<"战争结束"<<endl;  
+    }  
+    void CurrentState(War *war) { End(war); }  
+};  
+//后期  
+class AnaphaseState: public State  
+{  
+public:  
+    void Anaphase(War *war) //后期的具体行为  
+    {  
+        if(war->GetDays() < 30)  
+            cout<<"第"<<war->GetDays()<<"天：战争后期，双方拼死一搏"<<endl;  
+        else  
+        {  
+            war->SetState(new EndState());  
+            war->GetState();  
+        }  
+    }  
+    void CurrentState(War *war) { Anaphase(war); }  
+};  
+//中期  
+class MetaphaseState: public State  
+{  
+public:  
+    void Metaphase(War *war) //中期的具体行为  
+    {  
+        if(war->GetDays() < 20)  
+            cout<<"第"<<war->GetDays()<<"天：战争中期，进入相持阶段，双发各有损耗"<<endl;  
+        else  
+        {  
+            war->SetState(new AnaphaseState());  
+            war->GetState();  
+        }  
+    }  
+    void CurrentState(War *war) { Metaphase(war); }  
+};  
+//前期  
+class ProphaseState: public State  
+{  
+public:  
+    void Prophase(War *war)  //前期的具体行为  
+    {  
+        if(war->GetDays() < 10)  
+            cout<<"第"<<war->GetDays()<<"天：战争初期，双方你来我往，互相试探对方"<<endl;  
+        else  
+        {  
+            war->SetState(new MetaphaseState());  
+            war->GetState();  
+        }  
+    }  
+    void CurrentState(War *war) { Prophase(war); }  
+};
+
+//测试案例  
+int main()  
+{  
+    War *war = new War(new ProphaseState());  
+    for(int i = 1; i < 40;i += 5)  
+    {  
+        war->SetDays(i);  
+        war->GetState();  
+    }  
+    delete war;  
+    return 0;  
+}
+```
